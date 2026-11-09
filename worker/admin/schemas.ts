@@ -90,6 +90,10 @@ export const updateMailboxSchema = z.object({
   members: mailboxMembersSchema,
 });
 
+export const forwardDomainSchema = z.object({
+  domain: z.union([domainNameSchema, z.literal("").transform(() => null), z.null()]),
+});
+
 export const globalAiProcessingSchema = z.object({
   enabled: z.boolean(),
 });
