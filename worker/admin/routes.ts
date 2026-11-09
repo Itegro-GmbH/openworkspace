@@ -42,6 +42,7 @@ import {
   globalAiProcessingEnabled,
   setGlobalAiProcessingEnabled,
 } from "../ai/configuration";
+import { archiveStatus, runArchiveMaintenance } from "../mail/archive-maintenance";
 import {
   ensureForwardLocalPart,
   ensureForwardLocalParts,
@@ -353,6 +354,14 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/", userSessionAdminRoutes)
   .route("/", domainAdminRoutes)
   .route("/", samlApplicationAdminRoutes)
+  .get("/archive", async (c) => c.json({
+    ok: true as const,
+    ...(await archiveStatus(c.env)),
+  }))
+  .post("/archive/retry", async (c) => c.json({
+    ok: true as const,
+    ...(await runArchiveMaintenance(c.env, { force: true })),
+  }))
   .put(
     "/forward-domain",
     zValidator("json", forwardDomainSchema),

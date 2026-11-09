@@ -27,6 +27,8 @@ import {
 export { MailboxDO } from "./mailbox";
 export { OfficePreviewContainer } from "./mail/office-preview-container";
 import { resolveForwardRecipient } from "./mail/forward-addresses";
+import { archiveWithoutBlocking, recordArchiveEntry } from "./mail/archive";
+import { runArchiveMaintenance } from "./mail/archive-maintenance";
 import { OFFICE_PREVIEW_QUEUE } from "../shared/office-preview";
 import { consumeOfficePreviews } from "./mail/office-preview-queue";
 import { normalizeMailboxAddress } from "./lib/ids";
@@ -71,7 +73,7 @@ export type AppType = typeof app;
 
 export default {
   fetch: app.fetch,
-  async email(message, env) {
+  async email(message, env, ctx) {
     const receivedAt = Date.now();
     const recipient = normalizeMailboxAddress(message.to);
     let [mailbox] = await createDb(env.DB)
@@ -115,6 +117,26 @@ export default {
       raw,
       { httpMetadata: { contentType: "message/rfc822" } },
     );
+    // Journal copy for the retention archive. Never blocks mail delivery: a
+    // failure is recorded, shown in the admin dashboard and retried.
+    ctx.waitUntil((async () => {
+      try {
+        await recordArchiveEntry(env.DB, {
+          id: deliveryId,
+          mailboxId: mailbox.id,
+          direction: "incoming",
+          sourceKey: objectKey,
+        });
+        await archiveWithoutBlocking(env, deliveryId, new Uint8Array(raw));
+      } catch (error) {
+        console.error("Could not register inbound mail for archiving", deliveryId, error);
+      }
+    })());
+  },
+  scheduled(_controller, env, ctx) {
+    ctx.waitUntil(runArchiveMaintenance(env).catch((error) => {
+      console.error("Archive maintenance failed", error);
+    }));
   },
   queue(batch, env) {
     if (batch.queue === OFFICE_PREVIEW_QUEUE) return consumeOfficePreviews(batch, env);

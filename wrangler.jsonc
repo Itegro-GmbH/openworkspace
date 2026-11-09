@@ -51,8 +51,18 @@
     {
       "binding": "MAIL_STORAGE",
       "bucket_name": "openworkspace"
+    },
+    {
+      // Retention archive: create this bucket with the EU jurisdiction and a
+      // bucket lock rule (see docs/mail-archive.md) before deploying.
+      "binding": "MAIL_ARCHIVE",
+      "bucket_name": "itegro-mail-archive",
+      "jurisdiction": "eu"
     }
   ],
+  "triggers": {
+    "crons": ["*/10 * * * *"]
+  },
   "images": {
     "binding": "IMAGES"
   },

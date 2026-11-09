@@ -29,6 +29,7 @@ import {
   type AdminSection,
   MobileAdminMenu,
 } from "./admin-navigation";
+import { MailArchivePanel } from "./mail-archive-panel";
 import { ForwardDomainSettings } from "./forward-domain-settings";
 import { ForwardAddressPanel } from "./forward-address-panel";
 import { GlobalAiProcessing } from "./global-ai-processing";
@@ -302,6 +303,7 @@ export function AdminPage() {
                   enabled={state.data?.aiProcessingEnabled ?? false}
                   loading={state.isLoading}
                 />
+                <MailArchivePanel mailboxes={state.data?.mailboxes} />
                 {state.isSuccess && (
                   <ForwardDomainSettings
                     key={state.data.forwardDomain ?? ""}

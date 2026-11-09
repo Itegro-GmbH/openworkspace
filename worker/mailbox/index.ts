@@ -34,6 +34,12 @@ import {
 } from "../mail/inbound";
 import { prepareOutboundDelivery } from "../mail/outbound-delivery";
 import {
+  archiveWithoutBlocking,
+  recordArchiveEntry,
+  unarchivedSourceKeys,
+} from "../mail/archive";
+import { buildOutgoingEml } from "../mail/outgoing-eml";
+import {
   suggestParticipants,
   type ParticipantSource,
 } from "../mail/participants";
@@ -1782,8 +1788,22 @@ export class MailboxDO extends DurableObject<Env> {
         .where(inArray(pendingObjectDeletions.objectKey, retainedKeys))
         .run();
     }
+    // Raw copies that are not archived yet must not disappear; try again later.
+    const awaitingArchive = await unarchivedSourceKeys(
+      this.bindings.DB,
+      objectKeys,
+    ).catch(() => new Set(objectKeys));
+    for (const key of awaitingArchive) {
+      this.db
+        .update(pendingObjectDeletions)
+        .set({ nextAttemptAt: new Date(now + 10 * 60_000) })
+        .where(eq(pendingObjectDeletions.objectKey, key))
+        .run();
+    }
     const deletableJobs = jobs.filter(
-      (job) => !referencedObjectKeys.has(job.objectKey),
+      (job) =>
+        !referencedObjectKeys.has(job.objectKey)
+        && !awaitingArchive.has(job.objectKey),
     );
     if (!deletableJobs.length) return;
     const deletableKeys = deletableJobs.map((job) => job.objectKey);
@@ -1838,6 +1858,60 @@ export class MailboxDO extends DurableObject<Env> {
     }
   }
 
+  /** Fail-open: archive problems are logged for the dashboard, never thrown. */
+  private async archiveSubmittedOutgoing(
+    id: string,
+    delivery: Awaited<ReturnType<typeof prepareOutboundDelivery>>,
+    messageId: string,
+  ) {
+    try {
+      const mailboxId = this.ctx.id.name;
+      if (!mailboxId) return;
+      const sentAt = new Date();
+      await recordArchiveEntry(this.bindings.DB, {
+        id,
+        mailboxId,
+        direction: "outgoing",
+        sourceKey: null,
+        createdAt: sentAt,
+      });
+      await archiveWithoutBlocking(
+        this.bindings,
+        id,
+        buildOutgoingEml({ ...delivery, messageId, sentAt }),
+      );
+    } catch (error) {
+      console.error("Could not register outgoing mail for archiving", id, error);
+    }
+  }
+
+  /** Rebuilds the archive copy of a submitted outgoing message. */
+  async buildOutgoingArchive(id: string) {
+    const message = this.getEmail(id);
+    if (!message || message.direction !== "outgoing" || message.transportState !== "submitted") {
+      return null;
+    }
+    const delivery = await prepareOutboundDelivery(this.bindings, message);
+    const eml = buildOutgoingEml({
+      ...delivery,
+      messageId: message.messageIdHeader,
+      sentAt: message.timelineAt,
+    });
+    return { eml: eml.buffer.slice(eml.byteOffset, eml.byteOffset + eml.byteLength) as ArrayBuffer };
+  }
+
+  /** Ids of submitted outgoing messages, newest first (archive reconciliation). */
+  listSubmittedOutgoing(limit: number) {
+    return this.db
+      .select({ id: emails.id, at: emails.timelineAt })
+      .from(emails)
+      .where(and(eq(emails.direction, "outgoing"), eq(emails.transportState, "submitted")))
+      .orderBy(desc(emails.timelineAt))
+      .limit(limit)
+      .all()
+      .map((row) => ({ id: row.id, at: row.at.getTime() }));
+  }
+
   private async deliverOutgoing(id: string) {
     const message = this.getEmail(id);
     if (
@@ -1866,6 +1940,7 @@ export class MailboxDO extends DurableObject<Env> {
         messageIdHeader: result.messageId,
         error: null,
       });
+      await this.archiveSubmittedOutgoing(message.id, delivery, result.messageId);
     } catch (error) {
       this.updateTransport(message.id, {
         state: "unconfirmed",

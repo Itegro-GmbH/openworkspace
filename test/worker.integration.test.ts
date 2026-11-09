@@ -1,10 +1,18 @@
 import { env, exports } from "cloudflare:workers";
 import {
+  createExecutionContext,
   runDurableObjectAlarm,
   runInDurableObject,
+  waitOnExecutionContext,
 } from "cloudflare:test";
 import { describe, expect, it, vi } from "vitest";
 import worker from "../worker";
+
+async function deliverEmail(message: ForwardableEmailMessage) {
+  const ctx = createExecutionContext();
+  await worker.email(message, env, ctx);
+  await waitOnExecutionContext(ctx);
+}
 import { hashToken } from "../worker/lib/crypto";
 import { prepareOutboundDelivery } from "../worker/mail/outbound-delivery";
 import {
@@ -194,7 +202,7 @@ describe("mail worker", () => {
       mailboxId: string;
     }>();
     let secondaryRejection: string | undefined;
-    await worker.email({
+    await deliverEmail({
       from: "sender@example.net",
       to: "admin@secondary.test",
       raw: new Response(
@@ -205,7 +213,7 @@ describe("mail worker", () => {
       setReject: (reason: string) => {
         secondaryRejection = reason;
       },
-    } as unknown as ForwardableEmailMessage, env);
+    } as unknown as ForwardableEmailMessage);
     expect(secondaryRejection).toBeUndefined();
     const secondaryRaw = await env.MAIL_STORAGE.list({
       prefix: `mailboxes/${secondaryPersonal.mailboxId}/raw/`,
@@ -1407,7 +1415,7 @@ describe("mail worker", () => {
         rejection = reason;
       },
     } as unknown as ForwardableEmailMessage;
-    await worker.email(unknownRecipient, env);
+    await deliverEmail(unknownRecipient);
     expect(rejection).toContain("does not exist");
 
     const knownRecipient = () => ({
@@ -1422,8 +1430,8 @@ describe("mail worker", () => {
         throw new Error("Known mailbox must not be rejected");
       },
     }) as unknown as ForwardableEmailMessage;
-    await worker.email(knownRecipient(), env);
-    await worker.email(knownRecipient(), env);
+    await deliverEmail(knownRecipient());
+    await deliverEmail(knownRecipient());
     const stored = await env.MAIL_STORAGE.list({
       prefix: `mailboxes/${personalMailboxId}/raw/`,
     });

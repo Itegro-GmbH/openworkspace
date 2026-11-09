@@ -107,6 +107,37 @@ export const mailboxes = sqliteTable(
   ],
 );
 
+export const mailArchiveEntries = sqliteTable(
+  "mail_archive_entries",
+  {
+    // Inbound delivery id or outbound email id. No foreign key on purpose:
+    // the log must outlive mailbox deletion.
+    id: text("id").primaryKey(),
+    mailboxId: text("mailbox_id").notNull(),
+    direction: text("direction", { enum: ["incoming", "outgoing"] }).notNull(),
+    // R2 key of the source copy in MAIL_STORAGE (incoming only).
+    sourceKey: text("source_key"),
+    status: text("status", { enum: ["pending", "archived", "failed"] })
+      .notNull()
+      .default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    lastError: text("last_error"),
+    archiveKey: text("archive_key"),
+    sha256: text("sha256"),
+    sizeBytes: integer("size_bytes"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    archivedAt: integer("archived_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    index("mail_archive_entries_status_idx").on(table.status, table.updatedAt),
+  ],
+);
+
 export const mailboxForwardAddresses = sqliteTable(
   "mailbox_forward_addresses",
   {
