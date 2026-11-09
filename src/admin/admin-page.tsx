@@ -29,6 +29,8 @@ import {
   type AdminSection,
   MobileAdminMenu,
 } from "./admin-navigation";
+import { ForwardDomainSettings } from "./forward-domain-settings";
+import { ForwardAddressPanel } from "./forward-address-panel";
 import { GlobalAiProcessing } from "./global-ai-processing";
 import { MailboxAccessEditor } from "./mailbox-access-editor";
 import type {
@@ -233,7 +235,7 @@ export function AdminPage() {
             <Inbox className="size-4.5" strokeWidth={2.25} />
           </span>
           <div>
-            <p className="text-[0.875rem] leading-tight font-semibold tracking-[-0.01em]">OpenWorkspace</p>
+            <p className="text-[0.875rem] leading-tight font-semibold tracking-[-0.01em]">Itegro GmbH</p>
             <p className="text-[11px] leading-tight text-muted-foreground">Administration</p>
           </div>
         </div>
@@ -301,6 +303,12 @@ export function AdminPage() {
                   enabled={state.data?.aiProcessingEnabled ?? false}
                   loading={state.isLoading}
                 />
+                {state.isSuccess && (
+                  <ForwardDomainSettings
+                    key={state.data.forwardDomain ?? ""}
+                    forwardDomain={state.data.forwardDomain}
+                  />
+                )}
                 <div className="space-y-3">
                   <div className="flex justify-end">
                     <Button size="sm" onClick={() => go("new-mailbox")}>
@@ -409,7 +417,10 @@ export function AdminPage() {
               </div>
             )}
             {view === "mailbox" && selectedMailbox && (
-              <div className="max-w-3xl">
+              <div className="max-w-3xl space-y-6">
+                {state.data?.forwardDomain && (
+                  <ForwardAddressPanel mailbox={selectedMailbox} />
+                )}
                 <MailboxAccessEditor
                   key={selectedMailbox.id}
                   mailbox={selectedMailbox}

@@ -36,7 +36,7 @@ export function AppearanceSettings() {
       <AdminPanelHeader
         Icon={Monitor}
         title="Theme"
-        description="Choose how OpenWorkspace looks on this device."
+        description="Choose how Itegro GmbH looks on this device."
       />
       <AdminPanelBody>
         <div className="grid gap-3 sm:grid-cols-3">

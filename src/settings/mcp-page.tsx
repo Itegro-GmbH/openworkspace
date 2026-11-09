@@ -102,7 +102,7 @@ export function McpSettings() {
         <AdminPanelHeader
           Icon={KeyRound}
           title="MCP access"
-          description="Personal tokens let an MCP client act through your OpenWorkspace account."
+          description="Personal tokens let an MCP client act through your Itegro GmbH account."
         />
         <AdminPanelBody className="space-y-6">
           <div className="space-y-2">

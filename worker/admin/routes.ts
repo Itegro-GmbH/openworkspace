@@ -42,6 +42,12 @@ import {
   globalAiProcessingEnabled,
   setGlobalAiProcessingEnabled,
 } from "../ai/configuration";
+import {
+  ensureForwardLocalPart,
+  ensureForwardLocalParts,
+  getForwardDomain,
+  setForwardDomain,
+} from "../mail/forward-addresses";
 import { randomToken, hashToken } from "../lib/crypto";
 import { apiError } from "../lib/http";
 import { createId } from "../lib/ids";
@@ -53,6 +59,7 @@ import { personalAccountRecords } from "../auth/personal-account";
 import {
   createInvitationSchema,
   createOidcClientSchema,
+  forwardDomainSchema,
   globalAiProcessingSchema,
   groupInputSchema,
   updateOidcClientSchema,
@@ -303,14 +310,22 @@ export const adminRoutes = new Hono<AppEnv>()
       (claim) => claim.groupId,
     );
     const samlProvider = adminSamlProvider(c.env);
+    const forwardDomain = await getForwardDomain(c.env.DB);
+    const forwardParts = forwardDomain
+      ? await ensureForwardLocalParts(c.env.DB, mailboxRows)
+      : new Map<string, string>();
     return c.json({
       ok: true as const,
       aiProcessingEnabled,
+      forwardDomain,
       domains: domainRows,
       users: userRows,
       mailboxes: mailboxRows.map((mailbox) => ({
         ...mailbox,
         kind: mailboxKind(mailbox.ownerUserId),
+        forwardAddress: forwardDomain && forwardParts.has(mailbox.id)
+          ? `${forwardParts.get(mailbox.id)}@${forwardDomain}`
+          : null,
         members: (mailboxMembersById.get(mailbox.id) ?? []).map(
           ({ userId, canSend }) => ({ userId, canSend }),
         ),
@@ -338,6 +353,25 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/", userSessionAdminRoutes)
   .route("/", domainAdminRoutes)
   .route("/", samlApplicationAdminRoutes)
+  .put(
+    "/forward-domain",
+    zValidator("json", forwardDomainSchema),
+    async (c) => {
+      const domain = await setForwardDomain(c.env.DB, c.req.valid("json").domain);
+      return c.json({ ok: true as const, forwardDomain: domain });
+    },
+  )
+  .post("/mailboxes/:id/forward-address/rotate", async (c) => {
+    const db = createDb(c.env.DB);
+    const [mailbox] = await db
+      .select({ id: mailboxes.id, localPart: mailboxes.localPart })
+      .from(mailboxes)
+      .where(eq(mailboxes.id, c.req.param("id")))
+      .limit(1);
+    if (!mailbox) return apiError(c, 404, "NOT_FOUND", "Mailbox not found");
+    await ensureForwardLocalPart(c.env.DB, mailbox.id, mailbox.localPart, true);
+    return c.json({ ok: true as const });
+  })
   .put(
     "/ai",
     zValidator("json", globalAiProcessingSchema),

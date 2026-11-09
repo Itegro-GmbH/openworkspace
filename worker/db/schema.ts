@@ -107,6 +107,21 @@ export const mailboxes = sqliteTable(
   ],
 );
 
+export const mailboxForwardAddresses = sqliteTable(
+  "mailbox_forward_addresses",
+  {
+    mailboxId: text("mailbox_id")
+      .primaryKey()
+      .references(() => mailboxes.id, { onDelete: "cascade" }),
+    // Local part on the configured forward domain; unique and unguessable.
+    localPart: text("local_part").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => [uniqueIndex("mailbox_forward_addresses_local_part_idx").on(table.localPart)],
+);
+
 export const mailboxMembers = sqliteTable(
   "mailbox_members",
   {

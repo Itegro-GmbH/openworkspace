@@ -179,6 +179,27 @@ certificate in that bundle, and remove it after metadata caches have expired.
 
 Docs: [Deploy buttons](https://developers.cloudflare.com/workers/platform/deploy-buttons/) · [Catch-all](https://developers.cloudflare.com/email-service/configuration/email-routing-addresses/#catch-all-rule) · [Email Sending](https://developers.cloudflare.com/email-service/get-started/send-emails/) · [Event subscriptions](https://developers.cloudflare.com/email-service/platform/event-subscriptions/)
 
+## Mailboxes on domains hosted elsewhere (forwarding domain)
+
+For domains whose MX records you cannot move to Cloudflare (for example a
+mailbox at IONOS), OpenWorkspace can receive forwarded mail on a dedicated
+subdomain and present it under the mailbox's real address.
+
+1. Pick a subdomain of a Cloudflare zone, e.g. `fwd.example.com`, used only for
+   inbound forwarding. Enable Email Routing for it and set the catch-all rule to
+   **Send to a Worker** → `openworkspace`.
+2. In **Administration → Mailboxes**, enter it under *Forwarding domain*.
+3. Every mailbox now has a generated, unguessable address on that domain
+   (mailbox detail page, copyable, can be regenerated).
+4. At the external host, forward the mailbox (e.g. `me@other.tld`) to that
+   address.
+5. To send as `me@other.tld`, add `other.tld` under *Domains*, onboard it for
+   Cloudflare Email Sending and subscribe the delivery-events queue as for any
+   other domain, then create the mailbox `me@other.tld`.
+
+Real mailbox addresses always take precedence; only recipients on the
+forwarding domain are looked up in the forward-address table.
+
 ## Local development
 
 Requires [Bun](https://bun.sh).

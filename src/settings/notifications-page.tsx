@@ -38,7 +38,7 @@ function deviceStatusCopy(
     return "Push is unavailable in this browser. On iPhone or iPad, add the app to the Home Screen first.";
   }
   if (status === "denied") return "Notifications are blocked in this browser's site settings.";
-  if (status === "enabled") return "This device can notify you when OpenWorkspace is closed.";
+  if (status === "enabled") return "This device can notify you when Itegro GmbH is closed.";
   if (status === "repair") return "The server notification key changed. Reconnect this device.";
   if (status === "prompt") return "Enable notifications for this browser and device.";
   return "Checking this device…";

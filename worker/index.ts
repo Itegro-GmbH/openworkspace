@@ -26,6 +26,7 @@ import {
 } from "./oidc/routes";
 export { MailboxDO } from "./mailbox";
 export { OfficePreviewContainer } from "./mail/office-preview-container";
+import { resolveForwardRecipient } from "./mail/forward-addresses";
 import { OFFICE_PREVIEW_QUEUE } from "../shared/office-preview";
 import { consumeOfficePreviews } from "./mail/office-preview-queue";
 import { normalizeMailboxAddress } from "./lib/ids";
@@ -73,11 +74,21 @@ export default {
   async email(message, env) {
     const receivedAt = Date.now();
     const recipient = normalizeMailboxAddress(message.to);
-    const [mailbox] = await createDb(env.DB)
+    let [mailbox] = await createDb(env.DB)
       .select({ id: mailboxes.id })
       .from(mailboxes)
       .innerJoin(domains, mailboxAddressPredicate(recipient))
       .limit(1);
+    // Mail forwarded from an external host arrives on the dedicated forward
+    // domain; from here on it is treated as sent to the mailbox's own address.
+    let envelopeTo = message.to;
+    if (!mailbox) {
+      const forwarded = await resolveForwardRecipient(env.DB, recipient);
+      if (forwarded) {
+        mailbox = { id: forwarded.id };
+        envelopeTo = forwarded.address;
+      }
+    }
     if (!mailbox) {
       message.setReject(`Mailbox ${recipient} does not exist`);
       return;
@@ -87,7 +98,7 @@ export default {
     const deliveryId = await inboundDeliveryId({
       mailboxId: mailbox.id,
       envelopeFrom: message.from,
-      envelopeTo: message.to,
+      envelopeTo,
       raw,
     });
     const objectKey = `mailboxes/${mailbox.id}/raw/${deliveryId}.eml`;
@@ -96,7 +107,7 @@ export default {
       mailboxId: mailbox.id,
       rawObjectKey: objectKey,
       envelopeFrom: message.from,
-      envelopeTo: message.to,
+      envelopeTo,
       receivedAt,
     });
     await env.MAIL_STORAGE.put(

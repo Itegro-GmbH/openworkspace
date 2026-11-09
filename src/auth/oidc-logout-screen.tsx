@@ -45,12 +45,12 @@ export function OidcLogoutScreen() {
   return (
     <AuthShell
       Icon={Fingerprint}
-      title="OpenWorkspace Identity"
+      title="Itegro GmbH Identity"
       subtitle="Sign-out confirmation"
     >
       <AuthHeading
-        title="Sign out of OpenWorkspace?"
-        description="An application asked to end your OpenWorkspace session. Confirm only if you meant to sign out."
+        title="Sign out of Itegro GmbH?"
+        description="An application asked to end your Itegro GmbH session. Confirm only if you meant to sign out."
       />
 
       <div className="mt-6 flex flex-col gap-2">

@@ -23,7 +23,7 @@ export function BrandMark({
 
 export function AuthShell({
   Icon,
-  title = "OpenWorkspace",
+  title = "Itegro GmbH",
   subtitle,
   width = "max-w-md",
   children,

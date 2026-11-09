@@ -110,7 +110,7 @@ export function MobileAdminMenu({
         showCloseButton
       >
         <SheetHeader className="shrink-0 border-b border-border/70 pr-12">
-          <SheetTitle className="font-semibold tracking-[-0.01em]">OpenWorkspace</SheetTitle>
+          <SheetTitle className="font-semibold tracking-[-0.01em]">Itegro GmbH</SheetTitle>
           <SheetDescription>Administration</SheetDescription>
         </SheetHeader>
         <ScrollArea className="min-h-0 flex-1">

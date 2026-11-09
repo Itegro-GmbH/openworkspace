@@ -107,7 +107,7 @@ export async function beginRegistration(
     .where(eq(passkeyCredentials.userId, input.userId));
 
   const options = await generateRegistrationOptions({
-    rpName: "OpenWorkspace",
+    rpName: "Itegro GmbH",
     rpID: rpId,
     userID: new TextEncoder().encode(input.userId),
     userName: input.userName,
