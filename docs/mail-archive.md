@@ -25,32 +25,27 @@ normal empfangen und gesendet. Ein Fehler wird in der Datenbank
 - Rohkopien, die noch nicht archiviert sind, werden vom Löschjob **nicht**
   gelöscht, sondern später erneut geprüft.
 
-## 2. Einrichtung (vor dem Merge auf master!)
+## 2. Einrichtung
 
-Der Bucket muss existieren, bevor der Branch deployt wird, sonst schlägt der
-Deploy fehl.
+Automatisch: `bun run deploy` führt vor dem Deploy `scripts/setup-archive.ts`
+aus. Das Skript legt den Bucket `itegro-mail-archive` (EU) an, falls er fehlt,
+und setzt die Lock-Regel `mail-retention` (2555 Tage = 7 Jahre), falls sie
+fehlt. Es ist idempotent und kann bei jedem Deploy laufen. Schlägt nur das
+Setzen der Lock-Regel fehl, gibt es eine Warnung, der Deploy läuft weiter.
 
-1. Bucket anlegen (EU-Jurisdiktion, muss bei Erstellung gesetzt werden):
-   ```
-   bunx wrangler r2 bucket create itegro-mail-archive --jurisdiction eu
-   ```
-2. Aufbewahrungssperre (7 Jahre = 2555 Tage) setzen:
-   ```
-   bunx wrangler r2 bucket lock add itegro-mail-archive \
-     --name mail-retention --prefix "" --retention-days 2555
-   ```
-   Die genauen Flags ggf. mit `bunx wrangler r2 bucket lock add --help`
-   prüfen. Alternativ im Dashboard: R2 → Bucket → Settings → Bucket lock rules
-   → Age: 7 Jahre.
-3. Optional: Lifecycle-Regel, die Objekte nach Ablauf (z. B. 7 Jahre + 30 Tage)
-   löscht.
-4. Cloudflare-Konto absichern: 2FA für alle Admins, möglichst wenige
-   Account-Admins, API-Tokens ohne R2-Admin-Rechte für den Alltag.
-5. Branch mergen, Deploy abwarten, im Admin-Dashboard (Mailboxes-Ansicht)
-   prüfen, dass das Archiv-Panel „Healthy" zeigt.
+Voraussetzung: Der Deploy-Befehl in Cloudflare Workers Builds muss
+`bun run deploy` sein (und der API-Token R2-Schreibrechte haben). Wird nur
+`wrangler deploy` ausgeführt, den Bucket einmal von Hand anlegen:
 
-Hinweis: Solange Lock-Regeln existieren, kann der Bucket nicht geleert werden.
-Das ist gewollt.
+```
+bunx wrangler r2 bucket create itegro-mail-archive --jurisdiction eu
+bunx wrangler r2 bucket lock add itegro-mail-archive mail-retention "" \
+  --retention-days 2555 --jurisdiction eu
+```
+
+Weiterhin manuell: optional Lifecycle-Regel zum Löschen nach Ablauf; Cloudflare-
+Konto absichern (2FA, wenige Admins, keine R2-Admin-Tokens im Alltag).
+Solange Lock-Regeln existieren, kann der Bucket nicht geleert werden.
 
 ## 3. Betrieb
 

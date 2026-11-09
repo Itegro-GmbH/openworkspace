@@ -53,8 +53,8 @@
       "bucket_name": "openworkspace"
     },
     {
-      // Retention archive: create this bucket with the EU jurisdiction and a
-      // bucket lock rule (see docs/mail-archive.md) before deploying.
+      // Retention archive: created with the EU jurisdiction and a bucket lock rule by
+      // scripts/setup-archive.ts (bun run deploy). See docs/mail-archive.md.
       "binding": "MAIL_ARCHIVE",
       "bucket_name": "itegro-mail-archive",
       "jurisdiction": "eu"
