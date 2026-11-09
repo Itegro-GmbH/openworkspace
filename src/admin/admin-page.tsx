@@ -132,9 +132,8 @@ export function AdminPage() {
     queryKey: ["admin-state"],
     queryFn: async () => responseJson(await api.api.admin.state.$get()),
   });
-  const sharedMailboxes = state.data?.mailboxes.filter((mailbox) => mailbox.kind === "shared") ?? [];
   const selectedUser = state.data?.users.find((user) => user.id === selectedId);
-  const selectedMailbox = sharedMailboxes.find((mailbox) => mailbox.id === selectedId);
+  const selectedMailbox = (state.data?.mailboxes ?? []).find((mailbox) => mailbox.id === selectedId);
   const activeSection: AdminSection = view === "user" || view === "invite"
     ? "people"
     : view === "mailbox" || view === "new-mailbox"
