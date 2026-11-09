@@ -235,7 +235,7 @@ export function AdminPage() {
             <Inbox className="size-4.5" strokeWidth={2.25} />
           </span>
           <div>
-            <p className="text-[0.875rem] leading-tight font-semibold tracking-[-0.01em]">OpenWorkspace</p>
+            <p className="text-[0.875rem] leading-tight font-semibold tracking-[-0.01em]">Itegro GmbH</p>
             <p className="text-[11px] leading-tight text-muted-foreground">Administration</p>
           </div>
         </div>

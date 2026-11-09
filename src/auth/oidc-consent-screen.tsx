@@ -41,7 +41,7 @@ export function OidcConsentScreen() {
   return (
     <AuthShell
       Icon={Fingerprint}
-      title="OpenWorkspace Identity"
+      title="Itegro GmbH Identity"
       subtitle="Secure application access"
     >
       {request.isLoading ? (
@@ -60,7 +60,7 @@ export function OidcConsentScreen() {
           <AuthHeading
             eyebrow="Authorization request"
             title={`Continue to ${request.data.request.clientName}`}
-            description="This application is asking OpenWorkspace to confirm your identity."
+            description="This application is asking Itegro GmbH to confirm your identity."
           />
 
           <ul className="mt-6 space-y-2">

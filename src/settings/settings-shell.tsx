@@ -123,7 +123,7 @@ function MobileSettingsMenu({ value }: { value: SettingsSection }) {
       </SheetTrigger>
       <SheetContent side="left" className="w-72 gap-0 p-0" showCloseButton>
         <SheetHeader className="border-b border-border/70 pr-12">
-          <SheetTitle className="font-semibold tracking-[-0.01em]">OpenWorkspace</SheetTitle>
+          <SheetTitle className="font-semibold tracking-[-0.01em]">Itegro GmbH</SheetTitle>
           <SheetDescription>Settings</SheetDescription>
         </SheetHeader>
         <SettingsNavigation value={value} onNavigate={() => setOpen(false)} />
@@ -159,7 +159,7 @@ export function SettingsShell() {
           </span>
           <div>
             <p className="text-[0.875rem] leading-tight font-semibold tracking-[-0.01em]">
-              OpenWorkspace
+              Itegro GmbH
             </p>
             <p className="text-[11px] leading-tight text-muted-foreground">Settings</p>
           </div>

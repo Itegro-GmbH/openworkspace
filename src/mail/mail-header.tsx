@@ -66,7 +66,7 @@ export function MailHeader({
           <Inbox className="size-4.5" strokeWidth={2.25} />
         </span>
         <span className="hidden text-sm leading-none font-semibold tracking-[-0.01em] xl:inline">
-          OpenWorkspace
+          Itegro GmbH
         </span>
       </div>
 

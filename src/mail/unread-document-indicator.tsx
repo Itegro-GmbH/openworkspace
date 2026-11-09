@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useMailboxes } from "./use-mail-data";
 
-const APP_TITLE = "OpenWorkspace";
+const APP_TITLE = "Itegro GmbH";
 const DEFAULT_FAVICON = "/icons/app-icon.svg";
 const UNREAD_FAVICON = "/icons/app-icon-unread.svg";
 

@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "OpenWorkspace Mail",
-  "short_name": "OpenWorkspace",
+  "name": "Itegro GmbH Mail",
+  "short_name": "Itegro GmbH",
   "description": "Personal and shared team mailboxes.",
   "start_url": "/",
   "scope": "/",

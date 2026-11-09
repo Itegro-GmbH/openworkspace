@@ -38,7 +38,7 @@ export function AuthScreen() {
             <span className="grid size-9 place-items-center rounded-md bg-primary text-primary-foreground">
               <Inbox className="size-4.5" strokeWidth={2.25} />
             </span>
-            <span className="text-base font-semibold tracking-[-0.01em]">OpenWorkspace</span>
+            <span className="text-base font-semibold tracking-[-0.01em]">Itegro GmbH</span>
           </div>
 
           <p className="text-[11px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
@@ -113,7 +113,7 @@ function BrandPanel() {
         <span className="grid size-10 place-items-center rounded-md bg-primary text-primary-foreground">
           <Inbox className="size-5" strokeWidth={2.25} />
         </span>
-        <span className="text-lg font-semibold tracking-[-0.015em]">OpenWorkspace</span>
+        <span className="text-lg font-semibold tracking-[-0.015em]">Itegro GmbH</span>
       </div>
 
       <div className="max-w-md">
