@@ -136,8 +136,7 @@ export function MailboxList({
                   {mailbox.kind}
                 </Badge>
                 {mailbox.isPrimary ? <Badge>Primary</Badge> : null}
-                {canDelete ? (
-                  <DropdownMenu>
+                <DropdownMenu>
                     <DropdownMenuTrigger
                       render={(
                         <Button
@@ -152,26 +151,27 @@ export function MailboxList({
                       <Ellipsis />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {mailbox.kind === "shared" ? (
-                        <DropdownMenuItem onClick={() => onManage(mailbox.id)}>
-                          <SlidersHorizontal /> Manage access
-                        </DropdownMenuItem>
-                      ) : null}
+                      <DropdownMenuItem onClick={() => onManage(mailbox.id)}>
+                        <SlidersHorizontal /> Settings
+                      </DropdownMenuItem>
                       {canMakePrimary ? (
                         <DropdownMenuItem onClick={() => onMakePrimary(mailbox.id)}>
                           <Star /> Make primary
                         </DropdownMenuItem>
                       ) : null}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setDeleteCandidate(mailbox)}
-                      >
-                        <Trash2 /> Delete
-                      </DropdownMenuItem>
+                      {canDelete ? (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setDeleteCandidate(mailbox)}
+                          >
+                            <Trash2 /> Delete
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
                     </DropdownMenuContent>
                   </DropdownMenu>
-                ) : null}
               </div>
             </div>
           );

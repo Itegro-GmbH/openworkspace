@@ -34,6 +34,11 @@ export function ForwardAddressPanel({ mailbox }: { mailbox: AdminMailbox }) {
       />
       <AdminPanelBody>
         <CopyableValueRow label="Address" value={mailbox.forwardAddress} />
+        {mailbox.forwardAddress ? null : (
+          <p className="pb-2 text-xs text-muted-foreground">
+            Set a forwarding domain under Mailboxes first.
+          </p>
+        )}
         <div className="flex items-start justify-between gap-4 pt-2">
           <p className="text-xs leading-relaxed text-muted-foreground">
             Keep it private. Generating a new address stops the old one from
@@ -43,7 +48,7 @@ export function ForwardAddressPanel({ mailbox }: { mailbox: AdminMailbox }) {
             type="button"
             variant="outline"
             size="sm"
-            disabled={rotate.isPending}
+            disabled={rotate.isPending || !mailbox.forwardAddress}
             onClick={() => rotate.mutate()}
           >
             {rotate.isPending ? <LoaderCircle className="animate-spin" /> : <RefreshCw />}

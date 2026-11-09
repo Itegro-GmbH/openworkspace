@@ -76,7 +76,7 @@ const viewCopy: Record<AdminView, { title: string; description: string }> = {
   invite: { title: "Invite person", description: "Create a personal mailbox and a one-time registration link." },
   "new-mailbox": { title: "New mailbox", description: "Personal or shared address." },
   user: { title: "Person", description: "Profile details and passkey recovery." },
-  mailbox: { title: "Mailbox access", description: "Display name and member permissions for this shared address." },
+  mailbox: { title: "Mailbox settings", description: "Forwarding address, display name and member access for this mailbox." },
 };
 
 const parentViews: Partial<Record<AdminView, AdminView>> = {
@@ -418,16 +418,20 @@ export function AdminPage() {
             )}
             {view === "mailbox" && selectedMailbox && (
               <div className="max-w-3xl space-y-6">
-                {state.data?.forwardDomain && (
-                  <ForwardAddressPanel mailbox={selectedMailbox} />
+                <ForwardAddressPanel mailbox={selectedMailbox} />
+                {selectedMailbox.kind === "shared" ? (
+                  <MailboxAccessEditor
+                    key={selectedMailbox.id}
+                    mailbox={selectedMailbox}
+                    users={state.data?.users ?? []}
+                    pending={updateMailbox.isPending}
+                    onSubmit={(input) => updateMailbox.mutate({ id: selectedMailbox.id, input })}
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Access to a personal mailbox follows its owner and is managed under People.
+                  </p>
                 )}
-                <MailboxAccessEditor
-                  key={selectedMailbox.id}
-                  mailbox={selectedMailbox}
-                  users={state.data?.users ?? []}
-                  pending={updateMailbox.isPending}
-                  onSubmit={(input) => updateMailbox.mutate({ id: selectedMailbox.id, input })}
-                />
               </div>
             )}
             {view === "user" && state.isSuccess && !selectedUser && (

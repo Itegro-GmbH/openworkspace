@@ -39,7 +39,7 @@ export function MailboxAccessEditor({
     <form className={adminPanelClass} onSubmit={submit}>
       <AdminPanelHeader
         Icon={Mailbox}
-        title={`Manage ${mailbox.displayName}`}
+        title={`Access for ${mailbox.displayName}`}
         description={mailbox.address}
       />
       <AdminPanelBody className="space-y-6">
